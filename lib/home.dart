@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'food_Description.dart';
 import 'animated_food_cart.dart';
+import 'utils/colors.dart';
+import 'utils/strings.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -25,22 +27,9 @@ class _HomeState extends State<Home> {
   // Load all foods from Firebase only once
   Future<void> _loadFoods() async {
     try {
-      print('🔥 Starting Firebase fetch...');
-
-      final startTime = DateTime.now();
-
       final snapshot = await FirebaseFirestore.instance
-          .collection('foods')
+          .collection(AppStrings.foodsCollection)
           .get();
-
-      final endTime = DateTime.now();
-
-      print(
-        '🔥 Firebase fetch completed in '
-            '${endTime.difference(startTime).inMilliseconds} ms',
-      );
-
-      print('🔥 Documents received: ${snapshot.docs.length}');
 
       if (!mounted) return;
 
@@ -52,8 +41,6 @@ class _HomeState extends State<Home> {
         _isLoading = false;
       });
     } catch (e) {
-      print('🔥 Firebase ERROR: $e');
-
       if (!mounted) return;
 
       setState(() {
@@ -68,16 +55,16 @@ class _HomeState extends State<Home> {
   Widget foodTab(String category) {
     final foods = _allFoods
         .where(
-          (food) => food['category']?.toString() == category,
+          (food) => food[AppStrings.keyCategory]?.toString() == category,
     )
         .toList();
 
     if (foods.isEmpty) {
       return const Center(
         child: Text(
-          'No food found',
+          AppStrings.noFoodFound,
           style: TextStyle(
-            fontFamily: 'Roboto',
+            fontFamily: AppStrings.robotoFont,
             fontSize: 16,
           ),
         ),
@@ -120,11 +107,11 @@ itemBuilder: (context, index) {
           8,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: AppColors.black.withOpacity(0.08),
               offset: const Offset(0, 4),
               blurRadius: 16,
               spreadRadius: 1,
@@ -138,16 +125,16 @@ itemBuilder: (context, index) {
               children: [
                 const Icon(
                   Icons.star,
-                  color: Color(0xFFFFC107),
+                  color: AppColors.starYellow,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  food['rating'].toString(),
+                  food[AppStrings.keyRating].toString(),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'DM Sans',
+                    fontFamily: AppStrings.dmSansFont,
                   ),
                 ),
               ],
@@ -159,7 +146,7 @@ itemBuilder: (context, index) {
               child: SizedBox(
                 height: 72,
                 child: Image.asset(
-                  food['image'].toString(),
+                  food[AppStrings.keyImage].toString(),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -168,11 +155,11 @@ itemBuilder: (context, index) {
             const SizedBox(height: 6),
 
             Text(
-              food['title'].toString(),
+              food[AppStrings.keyTitle].toString(),
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'DM Sans',
+                fontFamily: AppStrings.dmSansFont,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -181,11 +168,11 @@ itemBuilder: (context, index) {
             const SizedBox(height: 2),
 
             Text(
-              food['description'].toString(),
+              food[AppStrings.keyDescription].toString(),
               style: const TextStyle(
                 fontSize: 12,
-                color: Colors.black,
-                fontFamily: 'DM Sans',
+                color: AppColors.black,
+                fontFamily: AppStrings.dmSansFont,
                 height: 1.2,
               ),
               maxLines: 2,
@@ -201,12 +188,12 @@ itemBuilder: (context, index) {
               CrossAxisAlignment.center,
               children: [
                 Text(
-                  '\$ ${(food['price'] as num).toDouble().toStringAsFixed(2)}',
+                  '\$ ${(food[AppStrings.keyPrice] as num).toDouble().toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFF9431),
-                    fontFamily: 'DM Sans',
+                    color: AppColors.primaryOrange,
+                    fontFamily: AppStrings.dmSansFont,
                   ),
                 ),
 
@@ -214,12 +201,12 @@ itemBuilder: (context, index) {
                   width: 32,
                   height: 32,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFFF9431),
+                    color: AppColors.primaryOrange,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.add,
-                    color: Colors.white,
+                    color: AppColors.white,
                     size: 20,
                   ),
                 ),
@@ -242,7 +229,7 @@ itemBuilder: (context, index) {
       return DefaultTabController(
         length: 3,
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.white,
 
           body: SingleChildScrollView(
             child: Padding(
@@ -256,22 +243,22 @@ itemBuilder: (context, index) {
                 children: [
                   Row(
                     children: [
-                      Image.asset('assets/Location.png'),
+                      Image.asset(AppStrings.locationIcon),
 
                       const SizedBox(width: 8),
 
                       const Text(
-                        ' Naveda, US ',
+                        AppStrings.locationText,
                         style: TextStyle(
                           fontSize: 16,
-                          fontFamily: 'Roboto',
-                          color: Colors.black,
+                          fontFamily: AppStrings.robotoFont,
+                          color: AppColors.black,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
                       Image.asset(
-                        'assets/down_arrow.png',
+                        AppStrings.downArrowIcon,
                       ),
                     ],
                   ),
@@ -283,18 +270,18 @@ itemBuilder: (context, index) {
                     children: [
                       const Expanded(
                         child: Text(
-                          "Order Your Food\nFast and Free",
+                          AppStrings.orderTitle,
                           style: TextStyle(
-                            fontFamily: 'Roboto',
+                            fontFamily: AppStrings.robotoFont,
                             fontSize: 28,
-                            color: Colors.black,
+                            color: AppColors.black,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
 
                       Image.asset(
-                        'assets/delivery 1.png',
+                        AppStrings.deliveryIcon,
                       ),
                     ],
                   ),
@@ -307,25 +294,25 @@ itemBuilder: (context, index) {
                         flex: 8,
                         child: TextField(
                           decoration: InputDecoration(
-                            hintText: 'Search',
+                            hintText: AppStrings.searchHint,
                             contentPadding:
                             const EdgeInsets.symmetric(
                               vertical: 10,
                             ),
                             hintStyle: const TextStyle(
-                              fontFamily: 'Roboto',
+                              fontFamily: AppStrings.robotoFont,
                               fontSize: 16,
-                              color: Color(0xFFCCCCCC),
+                              color: AppColors.searchHint,
                             ),
                             prefixIcon: Image.asset(
-                              'assets/Search.png',
+                              AppStrings.searchIcon,
                             ),
                             border: OutlineInputBorder(
                               borderRadius:
                               BorderRadius.circular(10),
                               borderSide:
                               const BorderSide(
-                                color: Color(0xFFE6E6E6),
+                                color: AppColors.searchBorder,
                                 width: 1,
                               ),
                             ),
@@ -336,7 +323,7 @@ itemBuilder: (context, index) {
                       Expanded(
                         flex: 2,
                         child: Image.asset(
-                          'assets/SearchFront.png',
+                          AppStrings.searchFrontIcon,
                         ),
                       ),
                     ],
@@ -345,11 +332,11 @@ itemBuilder: (context, index) {
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Categories",
+                    AppStrings.categories,
                     style: TextStyle(
-                      fontFamily: 'Roboto',
+                      fontFamily: AppStrings.robotoFont,
                       fontSize: 18,
-                      color: Colors.black,
+                      color: AppColors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -362,17 +349,17 @@ itemBuilder: (context, index) {
                     padding: EdgeInsets.zero,
                     labelPadding:
                     const EdgeInsets.only(right: 5),
-                    dividerColor: Colors.transparent,
+                    dividerColor: AppColors.transparent,
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicatorPadding:
                     const EdgeInsets.only(right: 5),
                     indicator: BoxDecoration(
-                      color: const Color(0xFFFF9431),
+                      color: AppColors.primaryOrange,
                       borderRadius:
                       BorderRadius.circular(10),
                     ),
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.black,
+                    labelColor: AppColors.white,
+                    unselectedLabelColor: AppColors.black,
 
                     tabs: [
                       Padding(
@@ -390,7 +377,7 @@ itemBuilder: (context, index) {
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color:
-                                const Color(0xFFFF9431),
+                                AppColors.primaryOrange,
                               ),
                               borderRadius:
                               BorderRadius.circular(10),
@@ -400,19 +387,19 @@ itemBuilder: (context, index) {
                               MainAxisAlignment.start,
                               children: [
                                 Image.asset(
-                                  'assets/burger.png',
+                                  AppStrings.burgerIcon,
                                 ),
 
                                 const SizedBox(width: 16),
 
                                 const Text(
-                                  'Burger',
+                                  AppStrings.burger,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight:
                                     FontWeight.bold,
-                                    color: Colors.black,
-                                    fontFamily: 'Roboto',
+                                    color: AppColors.black,
+                                    fontFamily: AppStrings.robotoFont,
                                   ),
                                 ),
                               ],
@@ -436,7 +423,7 @@ itemBuilder: (context, index) {
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color:
-                                const Color(0xFFFF9431),
+                                AppColors.primaryOrange,
                               ),
                               borderRadius:
                               BorderRadius.circular(10),
@@ -448,20 +435,20 @@ itemBuilder: (context, index) {
                                 Transform.scale(
                                   scale: 2,
                                   child: Image.asset(
-                                    'assets/pizza.png',
+                                    AppStrings.pizzaIcon,
                                   ),
                                 ),
 
                                 const SizedBox(width: 8),
 
                                 const Text(
-                                  'Pizza',
+                                  AppStrings.pizza,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight:
                                     FontWeight.bold,
-                                    color: Colors.black,
-                                    fontFamily: 'Roboto',
+                                    color: AppColors.black,
+                                    fontFamily: AppStrings.robotoFont,
                                   ),
                                 ),
                               ],
@@ -482,7 +469,7 @@ itemBuilder: (context, index) {
                           decoration: BoxDecoration(
                             border: Border.all(
                               color:
-                              const Color(0xFFFF9431),
+                              AppColors.primaryOrange,
                             ),
                             borderRadius:
                             BorderRadius.circular(10),
@@ -492,19 +479,19 @@ itemBuilder: (context, index) {
                             MainAxisAlignment.start,
                             children: [
                               Image.asset(
-                                'assets/sandwich.png',
+                                AppStrings.sandwichIcon,
                               ),
 
                               const SizedBox(width: 8),
 
                               const Text(
-                                'Sandwich',
+                                AppStrings.sandwich,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight:
                                   FontWeight.bold,
-                                  color: Colors.black,
-                                  fontFamily: 'Roboto',
+                                  color: AppColors.black,
+                                  fontFamily: AppStrings.robotoFont,
                                 ),
                               ),
                             ],
@@ -521,7 +508,7 @@ itemBuilder: (context, index) {
                       height: 300,
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFFFF9431),
+                          color: AppColors.primaryOrange,
                         ),
                       ),
                     )
@@ -533,8 +520,8 @@ itemBuilder: (context, index) {
                           child: Text(
                             'Error: $_error',
                             style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              color: Colors.red,
+                              fontFamily: AppStrings.robotoFont,
+                              color: AppColors.red,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -544,12 +531,12 @@ itemBuilder: (context, index) {
                       SizedBox(
                         height: 970,
                         child: Padding(
-                          padding: EdgeInsets.only(top: 0),
+                          padding: const EdgeInsets.only(top: 0),
                           child: TabBarView(
                             children: [
-                              foodTab('Burger'),
-                              foodTab('Pizza'),
-                              foodTab('Sandwich'),
+                              foodTab(AppStrings.burger),
+                              foodTab(AppStrings.pizza),
+                              foodTab(AppStrings.sandwich),
                             ],
                           ),
                         ),
@@ -566,14 +553,14 @@ itemBuilder: (context, index) {
         padding:
         const EdgeInsets.symmetric(horizontal: 48),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.10),
+              color: AppColors.black.withOpacity(0.10),
               offset: const Offset(0, -5),
               blurRadius: 15,
               spreadRadius: 0,
@@ -584,9 +571,9 @@ itemBuilder: (context, index) {
           mainAxisAlignment:
           MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/home.png'),
-            Image.asset('assets/lock.png'),
-            Image.asset('assets/3dots.png'),
+            Image.asset(AppStrings.homeIcon),
+            Image.asset(AppStrings.lockIcon),
+            Image.asset(AppStrings.dots3Icon),
           ],
         ),
       ),

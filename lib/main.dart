@@ -1,7 +1,9 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'Home.dart';
+import 'home.dart';
 import 'dart:ui';
+import 'utils/colors.dart';
+import 'utils/strings.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
@@ -14,26 +16,28 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Push notifications only for Android/iOS
+
   if (!kIsWeb) {
     await FirebaseMessaging.instance.requestPermission();
 
     String? token = await FirebaseMessaging.instance.getToken();
 
-    print('🔥 FCM Token: $token');
+    print('${AppStrings.fcmTokenLog}$token');
   }
 
-  FlutterError.onError =
-      FirebaseCrashlytics.instance.recordFlutterFatalError;
+  if (!kIsWeb) {
+    FlutterError.onError =
+        FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(
-      error,
-      stack,
-      fatal: true,
-    );
-    return true;
-  };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stack,
+        fatal: true,
+      );
+      return true;
+    };
+  }
 
   runApp(const MyApp());
 }
@@ -56,7 +60,7 @@ class MyApp extends StatelessWidget{
     return  Scaffold(
         body: Stack(
           children: [
-            Image.asset('assets/intro.png',
+            Image.asset(AppStrings.introImage,
               width: double.infinity,
               height: double.infinity,
               fit: BoxFit.cover,
@@ -70,8 +74,8 @@ class MyApp extends StatelessWidget{
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFFCAD5D),
-                    Colors.black,
+                    AppColors.lightOrange,
+                    AppColors.black,
                   ],
                   stops: [0.0, 0.5],
                 ),
@@ -86,28 +90,28 @@ class MyApp extends StatelessWidget{
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  const Text("Find and Get\nYour Best Food",
+                  const Text(AppStrings.onboardingTitle,
                       style: TextStyle(
                         fontSize: 35,
                         fontWeight: FontWeight.bold,
-                        color:Colors.white,
+                        color:AppColors.white,
                         height: 1.1,
                       )
                   ),
 
                   const SizedBox(height:15),
 
-                  const Text("Find the most delicious food",
+                  const Text(AppStrings.onboardingSubtitle1,
                       style: TextStyle(
                         fontSize: 15,
-                        color:Colors.white,
+                        color:AppColors.white,
                       )
                   ),
 
-                  const Text("with the best quality and free delivery here",
+                  const Text(AppStrings.onboardingSubtitle2,
                       style: TextStyle(
                         fontSize: 15,
-                        color:Colors.white,
+                        color:AppColors.white,
                       )
                   ),
 
@@ -125,7 +129,7 @@ class MyApp extends StatelessWidget{
                             top: 0,
                             right: 0,
                             child: Image.asset(
-                              'assets/Ellipse 21.png',
+                              AppStrings.ellipse21,
                             ),
                           ),
 
@@ -133,7 +137,7 @@ class MyApp extends StatelessWidget{
                             bottom: 0,
                             left: 0,
                             child: Image.asset(
-                              'assets/Ellipse 22.png',
+                              AppStrings.ellipse22,
                             ),
                           ),
 
@@ -141,7 +145,7 @@ class MyApp extends StatelessWidget{
                             bottom: 0,
                             right: 0,
                             child: Image.asset(
-                              'assets/Ellipse 23.png',
+                              AppStrings.ellipse23,
                             ),
                           ),
 
@@ -149,7 +153,7 @@ class MyApp extends StatelessWidget{
                             top: 0,
                             left: 0,
                             child: Image.asset(
-                              'assets/Ellipse 24.png',
+                              AppStrings.ellipse24,
                             ),
                           ),
 
@@ -158,12 +162,12 @@ class MyApp extends StatelessWidget{
                               width: 60,
                               height: 60,
                               decoration: const BoxDecoration(
-                                color: Color(0xFFEF820D),
+                                color: AppColors.orange,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
                                 Icons.arrow_forward,
-                                color: Colors.white,
+                                color: AppColors.white,
                                 size: 28,
                               ),
                             ),
@@ -188,9 +192,9 @@ class MyApp extends StatelessWidget{
                         );
                       },
                       child: const Text(
-                        'Skip',
+                        AppStrings.skip,
                         style: TextStyle(
-                          color: const Color(0xFF555555),
+                          color: AppColors.grey,
                           fontSize: 18,
                         ),
                       ),

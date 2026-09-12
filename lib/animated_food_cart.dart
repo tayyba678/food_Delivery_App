@@ -66,6 +66,7 @@ class _AnimatedCardsState extends State<AnimatedCards>
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return FadeTransition(

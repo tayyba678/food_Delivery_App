@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'utils/colors.dart';
+import 'utils/strings.dart';
 
 class Description extends StatefulWidget {
-
   final Map<String, dynamic> food;
 
   const Description({
@@ -47,11 +48,12 @@ class _DescriptionState extends State<Description> {
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final food = widget.food;
 
-    final String title = food['title'] ?? 'Food Item';
+    final String title = food['title'] ?? AppStrings.defaultFoodTitle;
     final String furtherDescription = food['further_description'] ?? '';
     final String image = food['image'] ?? '';
     final double rating = (food['rating'] ?? 0).toDouble();
@@ -59,7 +61,7 @@ class _DescriptionState extends State<Description> {
     final double totalPrice = price.toDouble() * quantity;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDECDA),
+      backgroundColor: AppColors.lightPeach,
       body: Column(
         children: [
           Expanded(
@@ -76,13 +78,11 @@ class _DescriptionState extends State<Description> {
                       return const Icon(
                         Icons.fastfood,
                         size: 100,
-                        color: Colors.amber,
+                        color: AppColors.amber,
                       );
                     },
                   ),
                 ),
-
-
                 Positioned(
                   top: 40,
                   left: 25,
@@ -91,16 +91,15 @@ class _DescriptionState extends State<Description> {
                       Navigator.pop(context);
                     },
                     child: Image.asset(
-                      'assets/back.png',
+                      AppStrings.backIcon,
                     ),
                   ),
                 ),
-
                 Positioned(
                   top: 40,
                   right: 25,
                   child: Image.asset(
-                    'assets/like.png',
+                    AppStrings.likeIcon,
                   ),
                 ),
 
@@ -111,7 +110,7 @@ class _DescriptionState extends State<Description> {
                   child: SizedBox(
                     height: 20,
                     child: Image.asset(
-                      'assets/dots.png',
+                    AppStrings.dotsIcon,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -126,7 +125,7 @@ class _DescriptionState extends State<Description> {
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(22),
                     topRight: Radius.circular(22),
@@ -152,7 +151,7 @@ class _DescriptionState extends State<Description> {
                           ),
                           const Icon(
                             Icons.star,
-                            color: Color(0xFFFFC107),
+                            color: AppColors.starYellow,
                             size: 16,
                           ),
                           const SizedBox(width: 2),
@@ -161,7 +160,7 @@ class _DescriptionState extends State<Description> {
                             style: const TextStyle(
                               fontSize: 18,
                               fontFamily: 'DM Sans',
-                              color: Colors.black,
+                              color: AppColors.black,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -170,7 +169,7 @@ class _DescriptionState extends State<Description> {
                             style: TextStyle(
                               fontSize: 12,
                               fontFamily: 'DM Sans',
-                              color: Colors.black,
+                              color: AppColors.black,
                             ),
                           ),
                         ],
@@ -188,7 +187,7 @@ class _DescriptionState extends State<Description> {
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFFF9431),
+                              color: AppColors.primaryOrange,
                               fontFamily: 'DM Sans',
                             ),
                           ),
@@ -202,7 +201,7 @@ class _DescriptionState extends State<Description> {
                               horizontal: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFF0E3),
+                              color: AppColors.peach,
                               borderRadius: BorderRadius.circular(25),
                             ),
                             child: Row(
@@ -222,12 +221,12 @@ class _DescriptionState extends State<Description> {
                                     width: 32,
                                     height: 32,
                                     decoration: const BoxDecoration(
-                                      color: Color(0xFFFF9431),
+                                      color: AppColors.primaryOrange,
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
                                       Icons.remove,
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       size: 25,
                                     ),
                                   ),
@@ -239,7 +238,7 @@ class _DescriptionState extends State<Description> {
                                   style: const TextStyle(
                                     fontSize: 22,
                                     fontFamily: 'DM Sans',
-                                    color: Colors.black,
+                                    color: AppColors.black,
                                   ),
                                 ),
 
@@ -255,12 +254,12 @@ class _DescriptionState extends State<Description> {
                                     width: 32,
                                     height: 32,
                                     decoration: const BoxDecoration(
-                                      color: Color(0xFFFF9431),
+                                      color: AppColors.primaryOrange,
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
                                       Icons.add,
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       size: 25,
                                     ),
                                   ),
@@ -288,7 +287,7 @@ class _DescriptionState extends State<Description> {
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xFFFF9431),
+                                color: AppColors.primaryOrange,
                                 width: 1,
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -304,13 +303,13 @@ class _DescriptionState extends State<Description> {
                                       'Size',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Color(0xFFFF9431),
+                                        color: AppColors.primaryOrange,
                                         fontFamily: 'DM Sans',
                                       ),
                                     ),
                                     Icon(
                                       Icons.keyboard_arrow_down,
-                                      color: Color(0xFFFF9431),
+                                      color: AppColors.primaryOrange,
                                       size: 20,
                                     ),
                                   ],
@@ -320,7 +319,7 @@ class _DescriptionState extends State<Description> {
                                   'Medium',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    color: Colors.black,
+                                    color: AppColors.black,
                                     fontFamily: 'DM Sans',
                                   ),
                                 ),
@@ -338,7 +337,7 @@ class _DescriptionState extends State<Description> {
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xFFFF9431),
+                                color: AppColors.primaryOrange,
                                 width: 1,
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -350,7 +349,7 @@ class _DescriptionState extends State<Description> {
                                   'Energy',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFFFF9431),
+                                    color: AppColors.primaryOrange,
                                     fontFamily: 'DM Sans',
                                   ),
                                 ),
@@ -359,7 +358,7 @@ class _DescriptionState extends State<Description> {
                                   '554 KCal',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    color: Colors.black,
+                                    color: AppColors.black,
                                     fontFamily: 'DM Sans',
                                   ),
                                 ),
@@ -378,7 +377,7 @@ class _DescriptionState extends State<Description> {
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xFFFF9431),
+                                color: AppColors.primaryOrange,
                                 width: 1,
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -390,7 +389,7 @@ class _DescriptionState extends State<Description> {
                                   'Delivery',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFFFF9431),
+                                    color: AppColors.primaryOrange,
                                     fontFamily: 'DM Sans',
                                   ),
                                 ),
@@ -399,7 +398,7 @@ class _DescriptionState extends State<Description> {
                                   '45 min',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    color: Colors.black,
+                                    color: AppColors.black,
                                     fontFamily: 'DM Sans',
                                   ),
                                 ),
@@ -434,7 +433,7 @@ class _DescriptionState extends State<Description> {
                         style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'DM Sans',
-                          color: Colors.black,
+                          color: AppColors.black,
                         ),
                       ),
 
@@ -449,10 +448,10 @@ class _DescriptionState extends State<Description> {
                           height: 61,
                           width:327,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF0E3),
+                            color: AppColors.peach,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFFF9431),
+                              color: AppColors.primaryOrange,
                             ),
                           ),
                           child: Row(
@@ -460,7 +459,7 @@ class _DescriptionState extends State<Description> {
                             children: [
                               const Icon(
                                 Icons.image,
-                                color: Color(0xFFFF9431),
+                                color: AppColors.primaryOrange,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -470,7 +469,7 @@ class _DescriptionState extends State<Description> {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontFamily: 'DM Sans',
-                                  color: Color(0xFFFF9431),
+                                  color: AppColors.primaryOrange,
                                 ),
                               ),
                             ],
@@ -488,10 +487,10 @@ class _DescriptionState extends State<Description> {
                           width: 327,
                           height: 61,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF0E3),
+                            color: AppColors.peach,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFFF9431),
+                              color: AppColors.primaryOrange,
                             ),
                           ),
                           child: Row(
@@ -499,7 +498,7 @@ class _DescriptionState extends State<Description> {
                             children: [
                               const Icon(
                                 Icons.calendar_month,
-                                color: Color(0xFFFF9431),
+                                color: AppColors.primaryOrange,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -509,7 +508,7 @@ class _DescriptionState extends State<Description> {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontFamily: 'DM Sans',
-                                  color: Color(0xFFFF9431),
+                                  color: AppColors.primaryOrange,
                                 ),
                               ),
                             ],
@@ -527,14 +526,14 @@ class _DescriptionState extends State<Description> {
                           width: 327,
                           height: 61,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF9431),
+                            color: AppColors.primaryOrange,
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: const Center(
                             child: Text(
                               'Add to Cart',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 fontSize: 18,
                                 fontFamily: 'DM Sans',
                                 fontWeight: FontWeight.bold,
