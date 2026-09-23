@@ -10,6 +10,8 @@ import 'firebase_options.dart';
 import 'package:flutter/foundation.dart';
 import 'login_page.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,8 +23,11 @@ void main() async {
   await _configureFirebaseMessaging();
 //TODO:: It will pass errors to firebase crashlytics except web
   _configureCrashlytics();
-
-  runApp(const MyApp());
+  runApp(
+  const ProviderScope(
+      child: MyApp(),
+  )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -260,5 +265,6 @@ Widget _buildSkipButton(BuildContext context) {
         ),
       ),
     ),
+
   );
 }

@@ -19,8 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController =
   TextEditingController();
 
-  final _formKey = GlobalKey<FormState>();
-
   bool _isLoading = false;
 
   // Validation errors
@@ -170,7 +168,6 @@ class _LoginPageState extends State<LoginPage> {
                   vertical: 40,
                 ),
                 child: Form(
-                  key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [

@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'food_Description.dart';
 import 'animated_food_cart.dart';
 import 'utils/colors.dart';
 import 'utils/strings.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'providers/food_providers.dart';
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  ConsumerState<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, dynamic>> _allFoods = [];
-  List<Map<String, dynamic>> _filteredFoods = [];
-  bool _isLoading = true;
-  String? _error;
+
 
   @override
   void initState() {
     super.initState();
-    _loadFoods();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -33,45 +30,15 @@ class _HomeState extends State<Home> {
   }
 
   // TODO:: SEARCH LOGIC
-  void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredFoods = _allFoods.where((food) {
-        final title = food[AppStrings.keyTitle]?.toString().toLowerCase() ?? '';
-        final description = food[AppStrings.keyDescription]?.toString().toLowerCase() ?? '';
-        return title.contains(query) || description.contains(query);
-      }).toList();
-    });
+  void _onSearchChanged() { setState(() {});
   }
 
-  // TODO:: FETCH FOODS FROM FIREBASE
-  Future<void> _loadFoods() async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection(AppStrings.foodsCollection)
-          .get();
 
-      if (!mounted) return;
-
-      setState(() {
-        _allFoods = snapshot.docs
-            .map((doc) => doc.data())
-            .toList();
-        _filteredFoods = _allFoods;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
 
   // TODO:: MAIN BUILD METHOD
   @override
   Widget build(BuildContext context) {
+    final foodsAsync = ref.watch(foodProvider);
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -106,7 +73,7 @@ class _HomeState extends State<Home> {
                 _buildTabBar(),
 
                 // Content Area (Loading, Error, or Food Tabs)
-                _buildContentArea(),
+                _buildContentArea(foodsAsync),
               ],
             ),
           ),
@@ -267,53 +234,91 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // TODO:: CONTENT AREA WIDGET
-  Widget _buildContentArea() {
-    if (_isLoading) {
-      return const SizedBox(
-        height: 300,
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.primaryOrange),
-        ),
-      );
-    } else if (_error != null) {
-      return SizedBox(
-        height: 300,
-        child: Center(
-          child: Text(
-            'Error: $_error',
-            style: const TextStyle(
-              fontFamily: AppStrings.robotoFont,
-              color: AppColors.red,
+// TODO:: CONTENT AREA WIDGET
+  Widget _buildContentArea(
+      AsyncValue<List<Map<String, dynamic>>> foodsAsync,
+      ) {
+    return foodsAsync.when(
+      loading: () {
+        return const SizedBox(
+          height: 300,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primaryOrange,
             ),
-            textAlign: TextAlign.center,
           ),
-        ),
-      );
-    } else {
-      return SizedBox(
-        height: 970,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 0),
-          child: TabBarView(
-            children: [
-              _buildFoodGrid(AppStrings.burger),
-              _buildFoodGrid(AppStrings.pizza),
-              _buildFoodGrid(AppStrings.sandwich),
-            ],
+        );
+      },
+      error: (error, stackTrace) {
+        return SizedBox(
+          height: 300,
+          child: Center(
+            child: Text(
+              'Error: $error',
+              style: const TextStyle(
+                fontFamily: AppStrings.robotoFont,
+                color: AppColors.red,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
-        ),
-      );
-    }
+        );
+      },
+      data: (foods) {
+        return SizedBox(
+          height: 970,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: TabBarView(
+              children: [
+                _buildFoodGrid(
+                  foods,
+                  AppStrings.burger,
+                  _searchController.text,
+                ),
+                _buildFoodGrid(
+                  foods,
+                  AppStrings.pizza,
+                  _searchController.text,
+                ),
+                _buildFoodGrid(
+                  foods,
+                  AppStrings.sandwich,
+                  _searchController.text,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // TODO:: FOOD GRID WIDGET
-  Widget _buildFoodGrid(String category) {
-    final foods = _filteredFoods
-        .where((food) => food[AppStrings.keyCategory]?.toString() == category)
+  Widget _buildFoodGrid(
+      List<Map<String, dynamic>> foods,
+      String category,
+      String searchQuery,
+      ) {
+    final query = searchQuery.toLowerCase();
+
+    final categoryFoods = foods
+        .where((food) {
+      final foodCategory =
+          food[AppStrings.keyCategory]?.toString() ?? '';
+
+      final title =
+          food[AppStrings.keyTitle]?.toString().toLowerCase() ?? '';
+
+      final description =
+          food[AppStrings.keyDescription]?.toString().toLowerCase() ?? '';
+
+      return foodCategory == category &&
+          (title.contains(query) || description.contains(query));
+    })
         .toList();
 
-    if (foods.isEmpty) {
+    if (categoryFoods.isEmpty) {
       return const Center(
         child: Text(
           AppStrings.noFoodFound,
@@ -328,14 +333,15 @@ class _HomeState extends State<Home> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: foods.length,
+      itemCount: categoryFoods.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 16,
         mainAxisExtent: 207,
       ),
-      itemBuilder: (context, index) => _buildFoodCard(foods[index], index),
+      itemBuilder: (context, index) =>
+          _buildFoodCard(categoryFoods[index], index),
     );
   }
 
