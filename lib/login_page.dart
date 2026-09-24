@@ -1,72 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'providers/login_providers.dart';
 import 'utils/colors.dart';
 import 'utils/strings.dart';
 import 'signup_Page.dart';
-import 'api/auth_api.dart';
 import 'home.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _usernameController =
   TextEditingController();
 
   final TextEditingController _passwordController =
   TextEditingController();
 
-  bool _isLoading = false;
-
-  // Validation errors
-  String? _usernameError;
-  String? _passwordError;
-
-//TODO:: LOGIN FUNCTION---------------------------------
+  //TODO:: LOGIN FUNCTION
 
   Future<void> _login() async {
     FocusScope.of(context).unfocus();
 
+    final notifier = ref.read(loginProvider.notifier);
+
     // Validate username
-    if (_usernameController.text.trim().isEmpty) {
-      setState(() {
-        _usernameError = AppStrings.userNameRequired;
-      });
-    } else {
-      _usernameError = null;
-    }
+    notifier.validateUsername(
+      _usernameController.text,
+    );
 
     // Validate password
-    if (_passwordController.text.isEmpty) {
-      setState(() {
-        _passwordError = AppStrings.passwordRequired;
-      });
-    } else if (_passwordController.text.length < 6) {
-      setState(() {
-        _passwordError = AppStrings.passwordMinLength;
-      });
-    } else {
-      _passwordError = null;
-    }
+    notifier.validatePassword(
+      _passwordController.text,
+    );
 
-    // Refresh UI after validation
-    setState(() {});
+    // Get latest validation state
+    final loginState = ref.read(loginProvider);
 
-    // Stop login if there is any error
-    if (_usernameError != null || _passwordError != null) {
+    // Stop login if there is any validation error
+    if (loginState.usernameError != null ||
+        loginState.passwordError != null) {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final result = await AuthApi.login(
-        username: _usernameController.text.trim(),
+      final result = await notifier.login(
+        username: _usernameController.text,
         password: _passwordController.text,
       );
 
@@ -95,12 +77,6 @@ class _LoginPageState extends State<LoginPage> {
           content: Text(e.toString()),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -108,6 +84,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loginState = ref.watch(loginProvider);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Stack(
@@ -123,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
           _buildLoginForm(context),
 
           // Screen-level loading overlay
-          if (_isLoading) _buildLoadingOverlay(),
+          if (loginState.isLoading) _buildLoadingOverlay(),
         ],
       ),
     );
@@ -149,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  //TODO::  LOGIN FORM
+  //TODO:: LOGIN FORM
 
   Widget _buildLoginForm(BuildContext context) {
     return SafeArea(
@@ -238,9 +216,13 @@ class _LoginPageState extends State<LoginPage> {
       ],
     );
   }
+
   //TODO:: USERNAME FIELD
 
   Widget _buildUsernameField() {
+    final usernameError =
+        ref.watch(loginProvider).usernameError;
+
     return Column(
       children: [
         // USERNAME LABEL
@@ -265,19 +247,21 @@ class _LoginPageState extends State<LoginPage> {
           controller: _usernameController,
 
           onTap: () {
-            if (_usernameError != null) {
-              setState(() {
-                _usernameError = null;
-              });
+            if (usernameError != null) {
+              ref
+                  .read(loginProvider.notifier)
+                  .validateUsername(
+                _usernameController.text,
+              );
             }
           },
 
           onChanged: (value) {
             if (value.trim().isNotEmpty &&
-                _usernameError != null) {
-              setState(() {
-                _usernameError = null;
-              });
+                usernameError != null) {
+              ref
+                  .read(loginProvider.notifier)
+                  .validateUsername(value);
             }
           },
 
@@ -293,7 +277,7 @@ class _LoginPageState extends State<LoginPage> {
             enabledBorder: _border(),
             focusedBorder: _focusedBorder(),
 
-            errorText: _usernameError,
+            errorText: usernameError,
 
             errorBorder: _border(),
             focusedErrorBorder: _focusedBorder(),
@@ -316,6 +300,9 @@ class _LoginPageState extends State<LoginPage> {
   //TODO::PASSWORD FIELD
 
   Widget _buildPasswordField() {
+    final passwordError =
+        ref.watch(loginProvider).passwordError;
+
     return Column(
       children: [
         // PASSWORD LABEL
@@ -342,25 +329,20 @@ class _LoginPageState extends State<LoginPage> {
           obscureText: true,
 
           onTap: () {
-            if (_passwordError ==
+            if (passwordError ==
                 AppStrings.passwordRequired) {
-              setState(() {
-                _passwordError = null;
-              });
+              ref
+                  .read(loginProvider.notifier)
+                  .validatePassword(
+                _passwordController.text,
+              );
             }
           },
 
           onChanged: (value) {
-            setState(() {
-              if (value.length >= 6) {
-                _passwordError = null;
-              } else if (value.isNotEmpty) {
-                _passwordError =
-                    AppStrings.passwordMinLength;
-              } else {
-                _passwordError = null;
-              }
-            });
+            ref
+                .read(loginProvider.notifier)
+                .validatePassword(value);
           },
 
           decoration: InputDecoration(
@@ -375,7 +357,7 @@ class _LoginPageState extends State<LoginPage> {
             enabledBorder: _border(),
             focusedBorder: _focusedBorder(),
 
-            errorText: _passwordError,
+            errorText: passwordError,
 
             errorBorder: _border(),
             focusedErrorBorder: _focusedBorder(),
@@ -398,11 +380,14 @@ class _LoginPageState extends State<LoginPage> {
   //TODO:: LOGIN BUTTON
 
   Widget _buildLoginButton() {
+    final isLoading =
+        ref.watch(loginProvider).isLoading;
+
     return SizedBox(
       width: 327,
       height: 61,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _login,
+        onPressed: isLoading ? null : _login,
 
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryOrange,

@@ -10,3 +10,30 @@ final foodProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
 
   return snapshot.docs.map((doc) => doc.data()).toList();
 });
+// TODO:: SEARCH PROVIDER
+
+class SearchNotifier extends Notifier<String> {
+  @override
+  String build() {
+    return '';
+  }
+
+  // TODO:: UPDATE SEARCH
+
+  void updateSearch(String query) {
+    state = query;
+  }
+
+  // TODO:: CLEAR SEARCH
+
+  void clearSearch() {
+    state = '';
+  }
+}
+
+// TODO:: SEARCH PROVIDER
+
+final searchProvider =
+NotifierProvider<SearchNotifier, String>(
+  SearchNotifier.new,
+);

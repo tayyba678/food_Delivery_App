@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'utils/colors.dart';
 import 'utils/strings.dart';
+import 'providers/description_provider.dart';
 
-class Description extends StatefulWidget {
+class Description extends ConsumerStatefulWidget {
   final Map<String, dynamic> food;
 
   const Description({
@@ -13,13 +15,11 @@ class Description extends StatefulWidget {
   });
 
   @override
-  State<Description> createState() => _DescriptionState();
+  ConsumerState<Description> createState() => _DescriptionState();
 }
 
-class _DescriptionState extends State<Description> {
-  int quantity = 1;
-  File? selectedImage;
-  DateTime? selectedDate;
+class _DescriptionState extends ConsumerState<Description> {
+
 
   // TODO:: PICK IMAGE FROM GALLERY
   Future<void> pickImage() async {
@@ -30,9 +30,9 @@ class _DescriptionState extends State<Description> {
     );
 
     if (image != null) {
-      setState(() {
-        selectedImage = File(image.path);
-      });
+      ref.read(descriptionProvider.notifier).selectImage(
+        File(image.path),
+      );
     }
   }
 
@@ -46,9 +46,7 @@ class _DescriptionState extends State<Description> {
     );
 
     if (date != null) {
-      setState(() {
-        selectedDate = date;
-      });
+      ref.read(descriptionProvider.notifier).selectDate(date);
     }
   }
 
@@ -222,7 +220,10 @@ class _DescriptionState extends State<Description> {
   // TODO:: PRICE AND QUANTITY ROW
   Widget _buildPriceAndQuantity() {
     final num price = widget.food[AppStrings.keyPrice] ?? 0;
-    final double totalPrice = price.toDouble() * quantity;
+    final descriptionState = ref.watch(descriptionProvider);
+
+    final double totalPrice =
+        price.toDouble() * descriptionState.quantity;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,6 +266,8 @@ class _DescriptionState extends State<Description> {
 
   // TODO:: QUANTITY SELECTOR
   Widget _buildQuantitySelector() {
+    final descriptionState = ref.watch(descriptionProvider);
+
     return Container(
       width: 118,
       height: 40,
@@ -279,9 +282,7 @@ class _DescriptionState extends State<Description> {
           // Decrement
           GestureDetector(
             onTap: () {
-              if (quantity > 1) {
-                setState(() => quantity--);
-              }
+              ref.read(descriptionProvider.notifier).decreaseQuantity();
             },
             child: Container(
               width: 32,
@@ -300,7 +301,7 @@ class _DescriptionState extends State<Description> {
 
           // Quantity Text
           Text(
-            quantity.toString(),
+            descriptionState.quantity.toString(),
             style: const TextStyle(
               fontSize: 22,
               fontFamily: AppStrings.dmSansFont,
@@ -310,7 +311,9 @@ class _DescriptionState extends State<Description> {
 
           // Increment
           GestureDetector(
-            onTap: () => setState(() => quantity++),
+            onTap: () {
+              ref.read(descriptionProvider.notifier).increaseQuantity();
+            },
             child: Container(
               width: 32,
               height: 32,
@@ -421,24 +424,28 @@ class _DescriptionState extends State<Description> {
 
   // TODO:: ACTION BUTTONS (IMAGE, DATE, ADD TO CART)
   Widget _buildActionButtons() {
+    final descriptionState = ref.watch(descriptionProvider);
+
     return Column(
       children: [
         // Image Picker
         _buildPickerButton(
           onTap: pickImage,
           icon: Icons.image,
-          label: selectedImage == null ? AppStrings.chooseImage : AppStrings.imageSelected,
-        ),
+          label: descriptionState.selectedImage == null
+              ? AppStrings.chooseImage
+              : AppStrings.imageSelected,  ),
         const SizedBox(height: 15),
 
         // Date Picker
         _buildPickerButton(
           onTap: pickDate,
           icon: Icons.calendar_month,
-          label: selectedDate == null
+          label: descriptionState.selectedDate == null
               ? AppStrings.selectDeliveryDate
-              : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-        ),
+              : '${descriptionState.selectedDate!.day}/'
+              '${descriptionState.selectedDate!.month}/'
+              '${descriptionState.selectedDate!.year}', ),
         const SizedBox(height: 30),
 
         // Add to Cart Button

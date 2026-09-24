@@ -17,11 +17,7 @@ class _HomeState extends ConsumerState<Home> {
   final TextEditingController _searchController = TextEditingController();
 
 
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(_onSearchChanged);
-  }
+
 
   @override
   void dispose() {
@@ -29,16 +25,13 @@ class _HomeState extends ConsumerState<Home> {
     super.dispose();
   }
 
-  // TODO:: SEARCH LOGIC
-  void _onSearchChanged() { setState(() {});
-  }
-
-
 
   // TODO:: MAIN BUILD METHOD
   @override
   Widget build(BuildContext context) {
     final foodsAsync = ref.watch(foodProvider);
+
+    final searchQuery = ref.watch(searchProvider);
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -71,9 +64,7 @@ class _HomeState extends ConsumerState<Home> {
 
                 // Category Tabs
                 _buildTabBar(),
-
-                // Content Area (Loading, Error, or Food Tabs)
-                _buildContentArea(foodsAsync),
+                _buildContentArea(foodsAsync, searchQuery),
               ],
             ),
           ),
@@ -125,6 +116,8 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   // TODO:: SEARCH FIELD WIDGET
+  // TODO:: SEARCH FIELD WIDGET
+
   Widget _buildSearchField() {
     return Row(
       children: [
@@ -132,15 +125,24 @@ class _HomeState extends ConsumerState<Home> {
           flex: 8,
           child: TextField(
             controller: _searchController,
+            onChanged: (value) {
+              ref
+                  .read(searchProvider.notifier)
+                  .updateSearch(value);
+            },
             decoration: InputDecoration(
               hintText: AppStrings.searchHint,
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 10,
+              ),
               hintStyle: const TextStyle(
                 fontFamily: AppStrings.robotoFont,
                 fontSize: 16,
                 color: AppColors.searchHint,
               ),
-              prefixIcon: Image.asset(AppStrings.searchIcon),
+              prefixIcon: Image.asset(
+                AppStrings.searchIcon,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: const BorderSide(
@@ -153,12 +155,13 @@ class _HomeState extends ConsumerState<Home> {
         ),
         Expanded(
           flex: 2,
-          child: Image.asset(AppStrings.searchFrontIcon),
+          child: Image.asset(
+            AppStrings.searchFrontIcon,
+          ),
         ),
       ],
     );
   }
-
   // TODO:: CATEGORIES HEADER WIDGET
   Widget _buildCategoriesHeader() {
     return const Text(
@@ -237,6 +240,8 @@ class _HomeState extends ConsumerState<Home> {
 // TODO:: CONTENT AREA WIDGET
   Widget _buildContentArea(
       AsyncValue<List<Map<String, dynamic>>> foodsAsync,
+
+      String searchQuery,
       ) {
     return foodsAsync.when(
       loading: () {
@@ -274,17 +279,20 @@ class _HomeState extends ConsumerState<Home> {
                 _buildFoodGrid(
                   foods,
                   AppStrings.burger,
-                  _searchController.text,
+                  searchQuery,
+
                 ),
                 _buildFoodGrid(
                   foods,
                   AppStrings.pizza,
-                  _searchController.text,
+                  searchQuery,
+
                 ),
                 _buildFoodGrid(
                   foods,
                   AppStrings.sandwich,
-                  _searchController.text,
+                  searchQuery,
+
                 ),
               ],
             ),

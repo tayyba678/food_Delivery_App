@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'providers/signup_provider.dart';
 import 'utils/colors.dart';
 import 'utils/strings.dart';
-import 'api/auth_api.dart';
 import 'home.dart';
 
-class SignupPage extends StatefulWidget {
+class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  ConsumerState<SignupPage> createState() => _SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SignupPageState extends ConsumerState<SignupPage> {
   final TextEditingController _firstNameController =
   TextEditingController();
 
@@ -24,67 +25,43 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _passwordController =
   TextEditingController();
 
-  bool _isLoading = false;
-
-  String? _firstNameError;
-  String? _lastNameError;
-  String? _usernameError;
-  String? _passwordError;
-
   // TODO: SIGNUP FUNCTION
 
   Future<void> _signup() async {
-    // Validate first name
-    if (_firstNameController.text.trim().isEmpty) {
-      _firstNameError = 'First name is required';
-    } else {
-      _firstNameError = null;
-    }
+    FocusScope.of(context).unfocus();
 
-    // Validate last name
-    if (_lastNameController.text.trim().isEmpty) {
-      _lastNameError = 'Last name is required';
-    } else {
-      _lastNameError = null;
-    }
+    final notifier = ref.read(signupProvider.notifier);
 
-    // Validate username
-    if (_usernameController.text.trim().isEmpty) {
-      _usernameError = AppStrings.userNameRequired;
-    } else {
-      _usernameError = null;
-    }
+    // Validate all fields
+    notifier.validateFirstName(
+      _firstNameController.text,
+    );
 
-    // Validate password
-    if (_passwordController.text.isEmpty) {
-      _passwordError = AppStrings.passwordRequired;
-    } else if (_passwordController.text.length < 6) {
-      _passwordError = AppStrings.passwordMinLength;
-    } else {
-      _passwordError = null;
-    }
+    notifier.validateLastName(
+      _lastNameController.text,
+    );
 
-    // Refresh UI after validation
-    setState(() {});
+    notifier.validateUsername(
+      _usernameController.text,
+    );
+
+    notifier.validatePassword(
+      _passwordController.text,
+    );
+
+    // Get latest validation state
+    final signupState = ref.read(signupProvider);
 
     // Stop signup if there is any error
-    if (_firstNameError != null ||
-        _lastNameError != null ||
-        _usernameError != null ||
-        _passwordError != null) {
+    if (signupState.hasError) {
       return;
     }
 
-    // Start screen loader
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final result = await AuthApi.signup(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        username: _usernameController.text.trim(),
+      final result = await notifier.signup(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        username: _usernameController.text,
         password: _passwordController.text,
       );
 
@@ -113,12 +90,6 @@ class _SignupPageState extends State<SignupPage> {
           content: Text(e.toString()),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -126,6 +97,8 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final signupState = ref.watch(signupProvider);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Stack(
@@ -141,7 +114,7 @@ class _SignupPageState extends State<SignupPage> {
           _buildSignupForm(),
 
           // Screen-level loading overlay
-          if (_isLoading) _buildLoadingOverlay(),
+          if (signupState.isLoading) _buildLoadingOverlay(),
         ],
       ),
     );
@@ -263,6 +236,9 @@ class _SignupPageState extends State<SignupPage> {
   // TODO: FIRST NAME FIELD
 
   Widget _buildFirstNameField() {
+    final firstNameError =
+        ref.watch(signupProvider).firstNameError;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -284,19 +260,19 @@ class _SignupPageState extends State<SignupPage> {
             controller: _firstNameController,
 
             onTap: () {
-              if (_firstNameError != null) {
-                setState(() {
-                  _firstNameError = null;
-                });
+              if (firstNameError != null) {
+                ref
+                    .read(signupProvider.notifier)
+                    .clearFirstNameError();
               }
             },
 
             onChanged: (value) {
               if (value.trim().isNotEmpty &&
-                  _firstNameError != null) {
-                setState(() {
-                  _firstNameError = null;
-                });
+                  firstNameError != null) {
+                ref
+                    .read(signupProvider.notifier)
+                    .clearFirstNameError();
               }
             },
 
@@ -312,7 +288,7 @@ class _SignupPageState extends State<SignupPage> {
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
 
-              errorText: _firstNameError,
+              errorText: firstNameError,
 
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
@@ -332,6 +308,9 @@ class _SignupPageState extends State<SignupPage> {
   // TODO: LAST NAME FIELD
 
   Widget _buildLastNameField() {
+    final lastNameError =
+        ref.watch(signupProvider).lastNameError;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -353,19 +332,19 @@ class _SignupPageState extends State<SignupPage> {
             controller: _lastNameController,
 
             onTap: () {
-              if (_lastNameError != null) {
-                setState(() {
-                  _lastNameError = null;
-                });
+              if (lastNameError != null) {
+                ref
+                    .read(signupProvider.notifier)
+                    .clearLastNameError();
               }
             },
 
             onChanged: (value) {
               if (value.trim().isNotEmpty &&
-                  _lastNameError != null) {
-                setState(() {
-                  _lastNameError = null;
-                });
+                  lastNameError != null) {
+                ref
+                    .read(signupProvider.notifier)
+                    .clearLastNameError();
               }
             },
 
@@ -381,7 +360,7 @@ class _SignupPageState extends State<SignupPage> {
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
 
-              errorText: _lastNameError,
+              errorText: lastNameError,
 
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
@@ -401,6 +380,9 @@ class _SignupPageState extends State<SignupPage> {
   // TODO: USERNAME FIELD
 
   Widget _buildUsernameField() {
+    final usernameError =
+        ref.watch(signupProvider).usernameError;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -422,19 +404,19 @@ class _SignupPageState extends State<SignupPage> {
             controller: _usernameController,
 
             onTap: () {
-              if (_usernameError != null) {
-                setState(() {
-                  _usernameError = null;
-                });
+              if (usernameError != null) {
+                ref
+                    .read(signupProvider.notifier)
+                    .clearUsernameError();
               }
             },
 
             onChanged: (value) {
               if (value.trim().isNotEmpty &&
-                  _usernameError != null) {
-                setState(() {
-                  _usernameError = null;
-                });
+                  usernameError != null) {
+                ref
+                    .read(signupProvider.notifier)
+                    .clearUsernameError();
               }
             },
 
@@ -450,7 +432,7 @@ class _SignupPageState extends State<SignupPage> {
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
 
-              errorText: _usernameError,
+              errorText: usernameError,
 
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
@@ -470,6 +452,9 @@ class _SignupPageState extends State<SignupPage> {
   // TODO: PASSWORD FIELD
 
   Widget _buildPasswordField() {
+    final passwordError =
+        ref.watch(signupProvider).passwordError;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -495,25 +480,15 @@ class _SignupPageState extends State<SignupPage> {
             // Remove "Password is required"
             // when user clicks the field.
             onTap: () {
-              if (_passwordError ==
-                  AppStrings.passwordRequired) {
-                setState(() {
-                  _passwordError = null;
-                });
-              }
+              ref
+                  .read(signupProvider.notifier)
+                  .clearPasswordRequiredError();
             },
 
             onChanged: (value) {
-              setState(() {
-                if (value.length >= 6) {
-                  _passwordError = null;
-                } else if (value.isNotEmpty) {
-                  _passwordError =
-                      AppStrings.passwordMinLength;
-                } else {
-                  _passwordError = null;
-                }
-              });
+              ref
+                  .read(signupProvider.notifier)
+                  .validatePassword(value);
             },
 
             decoration: InputDecoration(
@@ -528,7 +503,7 @@ class _SignupPageState extends State<SignupPage> {
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
 
-              errorText: _passwordError,
+              errorText: passwordError,
 
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
@@ -548,11 +523,14 @@ class _SignupPageState extends State<SignupPage> {
   // TODO: SIGNUP BUTTON
 
   Widget _buildSignupButton() {
+    final isLoading =
+        ref.watch(signupProvider).isLoading;
+
     return SizedBox(
       width: 327,
       height: 61,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _signup,
+        onPressed: isLoading ? null : _signup,
 
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryOrange,
