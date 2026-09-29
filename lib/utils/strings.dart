@@ -26,6 +26,7 @@ class AppStrings {
   static const String onboardingSubtitle2 = 'with the best quality and free delivery here';
   static const String skip = 'Skip';
   static const String fcmTokenLog = '🔥 FCM Token: ';
+  static const String products = 'Products';
 
   // home.dart Strings
   static const String locationText = ' Naveda, US ';
@@ -37,11 +38,8 @@ class AppStrings {
   static const String sandwich = 'Sandwich';
   static const String noFoodFound = 'No food found';
   static const String foodsCollection = 'foods';
-  static const String firebaseFetchStart = '🔥 Starting Firebase fetch...';
-  static const String firebaseFetchComplete = '🔥 Firebase fetch completed in ';
-  static const String msSuffix = ' ms';
-  static const String firebaseDocsReceived = '🔥 Documents received: ';
-  static const String firebaseErrorLog = '🔥 Firebase ERROR: ';
+  static const String menu = 'Menu';
+  static const String logout = 'Logout';
 
   // food_Description.dart Strings
   static const String defaultFoodTitle = 'Food Item';
@@ -71,6 +69,8 @@ class AppStrings {
   static const String keyFirstName = 'firstName';
   static const String keyLastName = 'lastName';
   static const String keyMessage = 'message';
+  static const String keyAccessToken = 'accessToken';
+  static const String keyRefreshToken = 'refreshToken';
 
   // Fonts
   static const String robotoFont = 'Roboto';
@@ -114,10 +114,27 @@ class AppStrings {
   static const String apiHost = 'dummyjson.com';
   static const String loginPath = '/auth/login';
   static const String signupPath = '/users/add';
+  static const String refreshPath = '/auth/refresh';
   static const String headerContentType = 'Content-Type';
   static const String headerAccept = 'Accept';
+  static const String headerAuthorization = 'Authorization';
   static const String contentTypeJson = 'application/json';
   static const String acceptJson = 'application/json';
   static const String loginFailed = 'Login failed';
   static const String signupFailed = 'Signup failed';
+  static const String sessionExpired = 'Session expired. Please login again.';
+  static const String firebaseFetchStart = '🔥 Starting Firebase fetch...';
+  static const String firebaseFetchComplete = '🔥 Firebase fetch completed in ';
+  static const String msSuffix = ' ms';
+  static const String firebaseDocsReceived = '🔥 Documents received: ';
+  static const String firebaseErrorLog = '🔥 Firebase ERROR: ';
+
+  // Error Messages
+  static const String errorNetwork = 'No internet connection. Please check your network.';
+  static const String errorTimeout = 'Connection timed out. Please try again.';
+  static const String errorServer = 'Server error. Please try again later.';
+  static const String errorValidation = 'Invalid input. Please check your data.';
+  static const String errorSessionExpired = 'Session expired. Please login again.';
+  static const String errorUnknown = 'Something went wrong. Please try again.';
+  static const String errorForceUpdate = 'A new version is available. Please update the app.';
 }

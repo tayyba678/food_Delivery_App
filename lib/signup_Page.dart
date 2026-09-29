@@ -4,6 +4,7 @@ import 'providers/signup_provider.dart';
 import 'utils/colors.dart';
 import 'utils/strings.dart';
 import 'home.dart';
+import 'login_page.dart'; // Added import for LoginPage
 
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
@@ -13,49 +14,23 @@ class SignupPage extends ConsumerStatefulWidget {
 }
 
 class _SignupPageState extends ConsumerState<SignupPage> {
-  final TextEditingController _firstNameController =
-  TextEditingController();
-
-  final TextEditingController _lastNameController =
-  TextEditingController();
-
-  final TextEditingController _usernameController =
-  TextEditingController();
-
-  final TextEditingController _passwordController =
-  TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   // TODO: SIGNUP FUNCTION
-
   Future<void> _signup() async {
     FocusScope.of(context).unfocus();
-
     final notifier = ref.read(signupProvider.notifier);
 
-    // Validate all fields
-    notifier.validateFirstName(
-      _firstNameController.text,
-    );
+    notifier.validateFirstName(_firstNameController.text);
+    notifier.validateLastName(_lastNameController.text);
+    notifier.validateUsername(_usernameController.text);
+    notifier.validatePassword(_passwordController.text);
 
-    notifier.validateLastName(
-      _lastNameController.text,
-    );
-
-    notifier.validateUsername(
-      _usernameController.text,
-    );
-
-    notifier.validatePassword(
-      _passwordController.text,
-    );
-
-    // Get latest validation state
     final signupState = ref.read(signupProvider);
-
-    // Stop signup if there is any error
-    if (signupState.hasError) {
-      return;
-    }
+    if (signupState.hasError) return;
 
     try {
       final result = await notifier.signup(
@@ -70,30 +45,22 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${AppStrings.signupSuccess} '
-                '${result['firstName'] ?? AppStrings.defaultUser}',
+            '${AppStrings.signupSuccess} ${result['firstName'] ?? AppStrings.defaultUser}',
           ),
         ),
       );
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const Home(),
-        ),
+        MaterialPageRoute(builder: (context) => const Home()),
       );
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
+        SnackBar(content: Text(e.toString())),
       );
     }
   }
-
-  // TODO: MAIN SCREEN
 
   @override
   Widget build(BuildContext context) {
@@ -104,43 +71,22 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Top-right decorative circle
           _buildTopRightCircle(),
-
-          // Bottom-left decorative circle
           _buildBottomLeftCircle(),
-
-          // Signup form
           _buildSignupForm(),
-
-          // Screen-level loading overlay
           if (signupState.isLoading) _buildLoadingOverlay(),
         ],
       ),
     );
   }
 
-  // TODO: TOP-RIGHT DECORATIVE CIRCLE
-
   Widget _buildTopRightCircle() {
-    return Positioned(
-      top: -100,
-      right: 0,
-      child: _decorativeCircle(),
-    );
+    return Positioned(top: -100, right: 0, child: _decorativeCircle());
   }
-
-  // TODO: BOTTOM-LEFT DECORATIVE CIRCLE
 
   Widget _buildBottomLeftCircle() {
-    return Positioned(
-      bottom: -150,
-      left: -50,
-      child: _decorativeCircle(),
-    );
+    return Positioned(bottom: -150, left: -50, child: _decorativeCircle());
   }
-
-  // TODO: SIGNUP FORM
 
   Widget _buildSignupForm() {
     return SafeArea(
@@ -149,43 +95,22 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           child: SizedBox(
             width: 327,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 40,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Signup title and subtitle
                   _buildSignupHeader(),
-
-                  // First name field
                   _buildFirstNameField(),
-
                   const SizedBox(height: 18),
-
-                  // Last name field
                   _buildLastNameField(),
-
                   const SizedBox(height: 18),
-
-                  // Username field
                   _buildUsernameField(),
-
                   const SizedBox(height: 18),
-
-                  // Password field
                   _buildPasswordField(),
-
                   const SizedBox(height: 25),
-
-                  // Signup button
                   _buildSignupButton(),
-
                   const SizedBox(height: 25),
-
-                  // Login section
                   _buildLoginSection(),
-
                   const SizedBox(height: 15),
                 ],
               ),
@@ -195,8 +120,6 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       ),
     );
   }
-
-  // TODO: SIGNUP HEADER
 
   Widget _buildSignupHeader() {
     return Column(
@@ -213,9 +136,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
             ),
           ),
         ),
-
         const SizedBox(height: 10),
-
         Center(
           child: Text(
             AppStrings.signupSubtitle,
@@ -227,72 +148,52 @@ class _SignupPageState extends ConsumerState<SignupPage> {
             ),
           ),
         ),
-
         const SizedBox(height: 30),
       ],
     );
   }
 
-  // TODO: FIRST NAME FIELD
-
   Widget _buildFirstNameField() {
-    final firstNameError =
-        ref.watch(signupProvider).firstNameError;
-
+    final firstNameError = ref.watch(signupProvider).firstNameError;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           AppStrings.firstNameLabel,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppStrings.dmSansFont,
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppColors.black,
           ),
         ),
-
         const SizedBox(height: 8),
-
         SizedBox(
           width: 327,
           child: TextField(
             controller: _firstNameController,
-
             onTap: () {
               if (firstNameError != null) {
-                ref
-                    .read(signupProvider.notifier)
-                    .clearFirstNameError();
+                ref.read(signupProvider.notifier).clearFirstNameError();
               }
             },
-
             onChanged: (value) {
-              if (value.trim().isNotEmpty &&
-                  firstNameError != null) {
-                ref
-                    .read(signupProvider.notifier)
-                    .clearFirstNameError();
+              if (value.trim().isNotEmpty && firstNameError != null) {
+                ref.read(signupProvider.notifier).clearFirstNameError();
               }
             },
-
             decoration: InputDecoration(
               hintText: AppStrings.firstNameHint,
-
               hintStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 color: AppColors.searchHint,
               ),
-
               border: _border(),
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
-
               errorText: firstNameError,
-
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
-
               errorStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 fontSize: 12,
@@ -305,66 +206,47 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: LAST NAME FIELD
-
   Widget _buildLastNameField() {
-    final lastNameError =
-        ref.watch(signupProvider).lastNameError;
-
+    final lastNameError = ref.watch(signupProvider).lastNameError;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           AppStrings.lastNameLabel,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppStrings.dmSansFont,
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppColors.black,
           ),
         ),
-
         const SizedBox(height: 8),
-
         SizedBox(
           width: 327,
           child: TextField(
             controller: _lastNameController,
-
             onTap: () {
               if (lastNameError != null) {
-                ref
-                    .read(signupProvider.notifier)
-                    .clearLastNameError();
+                ref.read(signupProvider.notifier).clearLastNameError();
               }
             },
-
             onChanged: (value) {
-              if (value.trim().isNotEmpty &&
-                  lastNameError != null) {
-                ref
-                    .read(signupProvider.notifier)
-                    .clearLastNameError();
+              if (value.trim().isNotEmpty && lastNameError != null) {
+                ref.read(signupProvider.notifier).clearLastNameError();
               }
             },
-
             decoration: InputDecoration(
               hintText: AppStrings.lastNameHint,
-
               hintStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 color: AppColors.searchHint,
               ),
-
               border: _border(),
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
-
               errorText: lastNameError,
-
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
-
               errorStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 fontSize: 12,
@@ -377,66 +259,47 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: USERNAME FIELD
-
   Widget _buildUsernameField() {
-    final usernameError =
-        ref.watch(signupProvider).usernameError;
-
+    final usernameError = ref.watch(signupProvider).usernameError;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           AppStrings.usernameLabel,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppStrings.dmSansFont,
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppColors.black,
           ),
         ),
-
         const SizedBox(height: 8),
-
         SizedBox(
           width: 327,
           child: TextField(
             controller: _usernameController,
-
             onTap: () {
               if (usernameError != null) {
-                ref
-                    .read(signupProvider.notifier)
-                    .clearUsernameError();
+                ref.read(signupProvider.notifier).clearUsernameError();
               }
             },
-
             onChanged: (value) {
-              if (value.trim().isNotEmpty &&
-                  usernameError != null) {
-                ref
-                    .read(signupProvider.notifier)
-                    .clearUsernameError();
+              if (value.trim().isNotEmpty && usernameError != null) {
+                ref.read(signupProvider.notifier).clearUsernameError();
               }
             },
-
             decoration: InputDecoration(
               hintText: AppStrings.usernameHint,
-
               hintStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 color: AppColors.searchHint,
               ),
-
               border: _border(),
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
-
               errorText: usernameError,
-
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
-
               errorStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 fontSize: 12,
@@ -449,65 +312,44 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: PASSWORD FIELD
-
   Widget _buildPasswordField() {
-    final passwordError =
-        ref.watch(signupProvider).passwordError;
-
+    final passwordError = ref.watch(signupProvider).passwordError;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           AppStrings.passwordLabel,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppStrings.dmSansFont,
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppColors.black,
           ),
         ),
-
         const SizedBox(height: 8),
-
         SizedBox(
           width: 327,
           child: TextField(
             controller: _passwordController,
-
             obscureText: true,
-
-            // Remove "Password is required"
-            // when user clicks the field.
             onTap: () {
-              ref
-                  .read(signupProvider.notifier)
-                  .clearPasswordRequiredError();
+              ref.read(signupProvider.notifier).clearPasswordRequiredError();
             },
-
             onChanged: (value) {
-              ref
-                  .read(signupProvider.notifier)
-                  .validatePassword(value);
+              ref.read(signupProvider.notifier).validatePassword(value);
             },
-
             decoration: InputDecoration(
               hintText: AppStrings.passwordHint,
-
               hintStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 color: AppColors.searchHint,
               ),
-
               border: _border(),
               enabledBorder: _border(),
               focusedBorder: _focusedBorder(),
-
               errorText: passwordError,
-
               errorBorder: _border(),
               focusedErrorBorder: _focusedBorder(),
-
               errorStyle: const TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 fontSize: 12,
@@ -520,35 +362,20 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: SIGNUP BUTTON
-
   Widget _buildSignupButton() {
-    final isLoading =
-        ref.watch(signupProvider).isLoading;
-
+    final isLoading = ref.watch(signupProvider).isLoading;
     return SizedBox(
       width: 327,
       height: 61,
       child: ElevatedButton(
         onPressed: isLoading ? null : _signup,
-
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryOrange,
-
           foregroundColor: AppColors.white,
-
-          disabledBackgroundColor:
-          AppColors.primaryOrange,
-
-          disabledForegroundColor:
-          AppColors.white,
-
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          disabledBackgroundColor: AppColors.primaryOrange,
+          disabledForegroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-
-        // No loader inside button
         child: Text(
           AppStrings.signupButton,
           style: const TextStyle(
@@ -561,31 +388,31 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: LOGIN SECTION
-
   Widget _buildLoginSection() {
     return SizedBox(
       width: 327,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          const Text(
             AppStrings.alreadyAccount,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: AppStrings.dmSansFont,
               fontSize: 14,
               color: AppColors.darkGrey,
             ),
           ),
-
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              // Changed pop to pushReplacement to clear state
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
             },
-
-            child: Text(
+            child: const Text(
               AppStrings.loginButton,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppStrings.dmSansFont,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -598,20 +425,14 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: LOADING OVERLAY
-
   Widget _buildLoadingOverlay() {
     return Container(
       color: Colors.black26,
       child: const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primaryOrange,
-        ),
+        child: CircularProgressIndicator(color: AppColors.primaryOrange),
       ),
     );
   }
-
-  // TODO: DECORATIVE CIRCLE
 
   Widget _decorativeCircle() {
     return Container(
@@ -632,29 +453,15 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  // TODO: INPUT BORDER
+  OutlineInputBorder _border() => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.searchBorder),
+      );
 
-  OutlineInputBorder _border() {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: const BorderSide(
-        color: AppColors.searchBorder,
-      ),
-    );
-  }
-
-  // TODO: FOCUSED INPUT BORDER
-
-  OutlineInputBorder _focusedBorder() {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: const BorderSide(
-        color: AppColors.primaryOrange,
-      ),
-    );
-  }
-
-  // TODO: DISPOSE CONTROLLERS
+  OutlineInputBorder _focusedBorder() => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppColors.primaryOrange),
+      );
 
   @override
   void dispose() {

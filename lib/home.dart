@@ -5,6 +5,8 @@ import 'utils/colors.dart';
 import 'utils/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/food_providers.dart';
+import 'services/auth_service.dart';
+import 'database/db_providers.dart';
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -16,57 +18,63 @@ class Home extends ConsumerStatefulWidget {
 class _HomeState extends ConsumerState<Home> {
   final TextEditingController _searchController = TextEditingController();
 
-
-
-
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-
   // TODO:: MAIN BUILD METHOD
   @override
   Widget build(BuildContext context) {
     final foodsAsync = ref.watch(foodProvider);
-
     final searchQuery = ref.watch(searchProvider);
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         backgroundColor: AppColors.white,
+        drawer: _buildDrawer(),
         body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 60,
-              left: 30,
-              right: 20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Location Header
-                _buildLocationHeader(),
-                const SizedBox(height: 20),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 60,
+                  left: 30,
+                  right: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Location Header
+                    _buildLocationHeader(),
+                    const SizedBox(height: 20),
 
-                // Order Title
-                _buildOrderTitle(),
-                const SizedBox(height: 20),
+                    // Order Title
+                    _buildOrderTitle(),
+                    const SizedBox(height: 20),
 
-                // Search Bar
-                _buildSearchField(),
-                const SizedBox(height: 20),
+                    // Search Bar
+                    _buildSearchField(),
+                    const SizedBox(height: 20),
 
-                // Categories Header
-                _buildCategoriesHeader(),
-                const SizedBox(height: 12),
+                    // Categories Header
+                    _buildCategoriesHeader(),
+                    const SizedBox(height: 12),
 
-                // Category Tabs
-                _buildTabBar(),
-                _buildContentArea(foodsAsync, searchQuery),
-              ],
-            ),
+                    // Category Tabs
+                    _buildTabBar(),
+
+                    // Content Area (Grid)
+                    _buildContentArea(
+                      foodsAsync,
+                      searchQuery,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         bottomNavigationBar: _buildBottomNavigationBar(),
@@ -116,8 +124,6 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   // TODO:: SEARCH FIELD WIDGET
-  // TODO:: SEARCH FIELD WIDGET
-
   Widget _buildSearchField() {
     return Row(
       children: [
@@ -126,9 +132,7 @@ class _HomeState extends ConsumerState<Home> {
           child: TextField(
             controller: _searchController,
             onChanged: (value) {
-              ref
-                  .read(searchProvider.notifier)
-                  .updateSearch(value);
+              ref.read(searchProvider.notifier).updateSearch(value);
             },
             decoration: InputDecoration(
               hintText: AppStrings.searchHint,
@@ -162,6 +166,7 @@ class _HomeState extends ConsumerState<Home> {
       ],
     );
   }
+
   // TODO:: CATEGORIES HEADER WIDGET
   Widget _buildCategoriesHeader() {
     return const Text(
@@ -183,7 +188,9 @@ class _HomeState extends ConsumerState<Home> {
       padding: EdgeInsets.zero,
       labelPadding: const EdgeInsets.only(right: 5),
       dividerColor: AppColors.transparent,
-      overlayColor: WidgetStateProperty.all(AppColors.transparent),
+      overlayColor: WidgetStateProperty.all(
+        AppColors.transparent,
+      ),
       indicatorSize: TabBarIndicatorSize.tab,
       indicatorPadding: const EdgeInsets.only(right: 5),
       indicator: BoxDecoration(
@@ -193,9 +200,9 @@ class _HomeState extends ConsumerState<Home> {
       labelColor: AppColors.white,
       unselectedLabelColor: AppColors.black,
       tabs: [
-        _buildCategoryTab(AppStrings.burgerIcon, AppStrings.burger, 123),
-        _buildCategoryTab(AppStrings.pizzaIcon, AppStrings.pizza, 110, isPizza: true),
-        _buildCategoryTab(AppStrings.sandwichIcon, AppStrings.sandwich, 150),
+        _buildCategoryTab(AppStrings.burgerIcon, AppStrings.burger, 140),
+        _buildCategoryTab(AppStrings.pizzaIcon, AppStrings.pizza, 123, isPizza: true),
+        _buildCategoryTab(AppStrings.sandwichIcon, AppStrings.sandwich, 160),
       ],
     );
   }
@@ -206,7 +213,7 @@ class _HomeState extends ConsumerState<Home> {
       width: width,
       height: 40,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.primaryOrange),
           borderRadius: BorderRadius.circular(10),
@@ -220,15 +227,14 @@ class _HomeState extends ConsumerState<Home> {
               height: isPizza ? 24 : null,
               fit: isPizza ? BoxFit.contain : null,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontSize: 18,
-                fontFamily: AppStrings.dmSansFont,
-                fontWeight: FontWeight.w700,
-                height: 1.0,
-                letterSpacing: -0.54,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontFamily: AppStrings.robotoFont,
               ),
             ),
           ],
@@ -237,38 +243,14 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 
-// TODO:: CONTENT AREA WIDGET
+  // TODO:: CONTENT AREA WIDGET
   Widget _buildContentArea(
       AsyncValue<List<Map<String, dynamic>>> foodsAsync,
-
       String searchQuery,
       ) {
     return foodsAsync.when(
-      loading: () {
-        return const SizedBox(
-          height: 300,
-          child: Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primaryOrange,
-            ),
-          ),
-        );
-      },
-      error: (error, stackTrace) {
-        return SizedBox(
-          height: 300,
-          child: Center(
-            child: Text(
-              'Error: $error',
-              style: const TextStyle(
-                fontFamily: AppStrings.robotoFont,
-                color: AppColors.red,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      },
+      loading: () => const SizedBox(height: 300, child: Center(child: CircularProgressIndicator(color: AppColors.primaryOrange))),
+      error: (error, stackTrace) => SizedBox(height: 300, child: Center(child: Text('Error: $error', style: const TextStyle(fontFamily: AppStrings.robotoFont, color: AppColors.red)))),
       data: (foods) {
         return SizedBox(
           height: 970,
@@ -276,24 +258,9 @@ class _HomeState extends ConsumerState<Home> {
             padding: const EdgeInsets.only(top: 0),
             child: TabBarView(
               children: [
-                _buildFoodGrid(
-                  foods,
-                  AppStrings.burger,
-                  searchQuery,
-
-                ),
-                _buildFoodGrid(
-                  foods,
-                  AppStrings.pizza,
-                  searchQuery,
-
-                ),
-                _buildFoodGrid(
-                  foods,
-                  AppStrings.sandwich,
-                  searchQuery,
-
-                ),
+                _buildFoodGrid(foods, AppStrings.burger, searchQuery),
+                _buildFoodGrid(foods, AppStrings.pizza, searchQuery),
+                _buildFoodGrid(foods, AppStrings.sandwich, searchQuery),
               ],
             ),
           ),
@@ -303,39 +270,17 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   // TODO:: FOOD GRID WIDGET
-  Widget _buildFoodGrid(
-      List<Map<String, dynamic>> foods,
-      String category,
-      String searchQuery,
-      ) {
+  Widget _buildFoodGrid(List<Map<String, dynamic>> foods, String category, String searchQuery) {
     final query = searchQuery.toLowerCase();
-
-    final categoryFoods = foods
-        .where((food) {
-      final foodCategory =
-          food[AppStrings.keyCategory]?.toString() ?? '';
-
-      final title =
-          food[AppStrings.keyTitle]?.toString().toLowerCase() ?? '';
-
-      final description =
-          food[AppStrings.keyDescription]?.toString().toLowerCase() ?? '';
-
-      return foodCategory == category &&
-          (title.contains(query) || description.contains(query));
-    })
-        .toList();
+    final categoryFoods = foods.where((food) {
+      final foodCategory = food[AppStrings.keyCategory]?.toString() ?? '';
+      final title = food[AppStrings.keyTitle]?.toString().toLowerCase() ?? '';
+      final description = food[AppStrings.keyDescription]?.toString().toLowerCase() ?? '';
+      return foodCategory == category && (title.contains(query) || description.contains(query));
+    }).toList();
 
     if (categoryFoods.isEmpty) {
-      return const Center(
-        child: Text(
-          AppStrings.noFoodFound,
-          style: TextStyle(
-            fontFamily: AppStrings.robotoFont,
-            fontSize: 16,
-          ),
-        ),
-      );
+      return const Center(child: Text(AppStrings.noFoodFound, style: TextStyle(fontFamily: AppStrings.robotoFont, fontSize: 16)));
     }
 
     return GridView.builder(
@@ -348,8 +293,7 @@ class _HomeState extends ConsumerState<Home> {
         mainAxisSpacing: 16,
         mainAxisExtent: 207,
       ),
-      itemBuilder: (context, index) =>
-          _buildFoodCard(categoryFoods[index], index),
+      itemBuilder: (context, index) => _buildFoodCard(categoryFoods[index], index),
     );
   }
 
@@ -359,12 +303,7 @@ class _HomeState extends ConsumerState<Home> {
       index: index,
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Description(food: food),
-            ),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => Description(food: food)));
         },
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -383,107 +322,79 @@ class _HomeState extends ConsumerState<Home> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Rating Row
               Row(
                 children: [
                   const Icon(Icons.star, color: AppColors.starYellow, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     food[AppStrings.keyRating].toString(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: AppStrings.dmSansFont,
-                    ),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: AppStrings.dmSansFont),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
-
-              // Food Image
-              Center(
-                child: SizedBox(
-                  height: 72,
-                  child: Image.asset(
-                    food[AppStrings.keyImage].toString(),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
+              Center(child: SizedBox(height: 72, child: Image.asset(food[AppStrings.keyImage].toString(), fit: BoxFit.contain))),
               const SizedBox(height: 6),
-
-              // Title
               Text(
                 food[AppStrings.keyTitle].toString(),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: AppStrings.dmSansFont,
-                ),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, fontFamily: AppStrings.dmSansFont),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
-
-              // Description
               Text(
                 food[AppStrings.keyDescription].toString(),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.black,
-                  fontFamily: AppStrings.dmSansFont,
-                  height: 1.2,
-                ),
+                style: const TextStyle(fontSize: 12, color: AppColors.black, fontFamily: AppStrings.dmSansFont, height: 1.2),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
-
-              // Price and Add Button Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '\$ ${(food[AppStrings.keyPrice] as num).toDouble().toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            height: 1.0,
-                            letterSpacing: -0.42,
-                            color: AppColors.primaryOrange,
-                            fontFamily: AppStrings.dmSansFont,
-                          ),
-                        ),
-                        const TextSpan(
-                          text: '.00',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            height: 1.0,
-                            letterSpacing: -0.3,
-                            color: AppColors.primaryOrange,
-                            fontFamily: AppStrings.dmSansFont,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    '\$ ${(food[AppStrings.keyPrice] as num).toDouble().toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryOrange,
+                      fontFamily: AppStrings.dmSansFont,
                     ),
                   ),
                   Container(
                     width: 32,
                     height: 32,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: const BoxDecoration(color: AppColors.primaryOrange, shape: BoxShape.circle),
                     child: const Icon(Icons.add, color: AppColors.white, size: 20),
                   ),
                 ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // TODO:: DRAWER WIDGET
+  Widget _buildDrawer() {
+    return Drawer(
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            const Text(AppStrings.menu, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 30),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text(AppStrings.logout),
+              onTap: () async {
+                final db = ref.read(dbProvider);
+                await AuthService.logout(db, context: context);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -497,25 +408,20 @@ class _HomeState extends ConsumerState<Home> {
       padding: const EdgeInsets.symmetric(horizontal: 48),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withOpacity(0.10),
-            offset: const Offset(0, -5),
-            blurRadius: 15,
-            spreadRadius: 0,
-          ),
-        ],
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.10), offset: const Offset(0, -5), blurRadius: 15, spreadRadius: 0)],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Image.asset(AppStrings.homeIcon),
           Image.asset(AppStrings.lockIcon),
-          Image.asset(AppStrings.dots3Icon),
+          Builder(
+            builder: (context) => GestureDetector(
+              onTap: () => Scaffold.of(context).openDrawer(),
+              child: Image.asset(AppStrings.dots3Icon),
+            ),
+          ),
         ],
       ),
     );

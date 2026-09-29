@@ -22,18 +22,13 @@ class LoginState {
   }) {
     return LoginState(
       isLoading: isLoading ?? this.isLoading,
-
-      usernameError: clearUsernameError
-          ? null
-          : usernameError ?? this.usernameError,
-
-      passwordError: clearPasswordError
-          ? null
-          : passwordError ?? this.passwordError,
+      usernameError: clearUsernameError ? null : usernameError ?? this.usernameError,
+      passwordError: clearPasswordError ? null : passwordError ?? this.passwordError,
     );
   }
 }
-class LoginNotifier extends Notifier<LoginState> {
+
+class LoginNotifier extends AutoDisposeNotifier<LoginState> {
   @override
   LoginState build() {
     return const LoginState();
@@ -41,70 +36,42 @@ class LoginNotifier extends Notifier<LoginState> {
 
   void validateUsername(String username) {
     if (username.trim().isEmpty) {
-      state = const LoginState(
-        usernameError: AppStrings.userNameRequired,
-      );
+      state = state.copyWith(usernameError: AppStrings.userNameRequired);
     } else {
-      state = LoginState(
-        isLoading: state.isLoading,
-        passwordError: state.passwordError,
-      );
+      state = state.copyWith(clearUsernameError: true);
     }
   }
 
   void validatePassword(String password) {
-    String? error;
-
     if (password.isEmpty) {
-      error = AppStrings.passwordRequired;
+      state = state.copyWith(passwordError: AppStrings.passwordRequired);
     } else if (password.length < 6) {
-      error = AppStrings.passwordMinLength;
+      state = state.copyWith(passwordError: AppStrings.passwordMinLength);
+    } else {
+      state = state.copyWith(clearPasswordError: true);
     }
-
-    state = LoginState(
-      isLoading: state.isLoading,
-      usernameError: state.usernameError,
-      passwordError: error,
-    );
   }
+
   Future<Map<String, dynamic>> login({
     required String username,
     required String password,
   }) async {
-    state = LoginState(
-      isLoading: true,
-      usernameError: state.usernameError,
-      passwordError: state.passwordError,
-    );
+    state = state.copyWith(isLoading: true);
 
     try {
       final result = await AuthApi.login(
         username: username.trim(),
         password: password,
       );
-
-      state = LoginState(
-        isLoading: false,
-        usernameError: state.usernameError,
-        passwordError: state.passwordError,
-      );
-
+      state = state.copyWith(isLoading: false);
       return result;
     } catch (e) {
-      state = LoginState(
-        isLoading: false,
-        usernameError: state.usernameError,
-        passwordError: state.passwordError,
-      );
-
+      state = state.copyWith(isLoading: false);
       rethrow;
     }
   }
-
 }
 
-
-  final loginProvider =
-    NotifierProvider<LoginNotifier, LoginState>(
-    LoginNotifier.new,
-    );
+final loginProvider = NotifierProvider.autoDispose<LoginNotifier, LoginState>(
+  LoginNotifier.new,
+);

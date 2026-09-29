@@ -4,14 +4,15 @@ import 'home.dart';
 import 'dart:ui';
 import 'utils/colors.dart';
 import 'utils/strings.dart';
+import 'utils/keys.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'services/secure_storage_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'package:flutter/foundation.dart';
 import 'login_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'product_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,16 +34,33 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<bool> _isLoggedIn() async {
+    return await SecureStorageService.hasToken();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-        designSize: const Size(720, 1600),
-        minTextAdapt: true,
-        splitScreenMode: true,
-        child: MaterialApp(
+    return MaterialApp(
+      navigatorKey: navigatorKey, // Using the key from keys.dart
       debugShowCheckedModeBanner: false,
-      home: const Onboarding(),
-        ),
+      home: FutureBuilder<bool>(
+        future: _isLoggedIn(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          if (snapshot.data == true) {
+            return const Home();
+          }
+
+          return const Onboarding();
+        },
+      ),
     );
   }
 }
@@ -58,6 +76,12 @@ class Onboarding extends StatelessWidget {
           //TODO:: It will show background picture with shading effects
           _buildBackground(),
           Positioned(
+            top: 50,
+            right: 20,
+            child: _buildProductsButton(context),
+          ),
+
+          Positioned(
             bottom: 50,
             left: 27,
             right: 27,
@@ -65,15 +89,12 @@ class Onboarding extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               //TODO:: This function has title and subtitles
               children: [ _buildOnBoardingPageTitle(),
-
-
                 const SizedBox(height: 50),
                 //TODO:: This function has a button with 4 corners
                 _buildCircleButtonWithCorners(),
                 const SizedBox(height: 20),
                 //TODO:: It contains login button
                 _buildLoginButton(context),
-
                 //TODO:: It contains Skip button
                 _buildSkipButton(context),
               ],
@@ -139,31 +160,31 @@ Widget _buildBackground() {
   );
 }
 
-Widget _buildOnBoardingPageTitle() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(AppStrings.onboardingTitle,
-          style: TextStyle(
-            fontSize: 35,
-            fontWeight: FontWeight.bold,
-            color: AppColors.white,
-            height: 1.1,
-          )),
-      const SizedBox(height: 15),
-      const Text(AppStrings.onboardingSubtitle1,
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.white,
-          )),
-      const Text(AppStrings.onboardingSubtitle2,
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.white,
-          )),
-    ],
-  );
-}
+  Widget _buildOnBoardingPageTitle() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+         Text(AppStrings.onboardingTitle,
+            style: TextStyle(
+              fontSize: 35,
+              fontWeight: FontWeight.bold,
+              color: AppColors.white,
+              height: 1.1,
+            )),
+         SizedBox(height: 15),
+         Text(AppStrings.onboardingSubtitle1,
+            style: TextStyle(
+              fontSize: 15,
+              color: AppColors.white,
+            )),
+         Text(AppStrings.onboardingSubtitle2,
+            style: TextStyle(
+              fontSize: 15,
+              color: AppColors.white,
+            )),
+      ],
+    );
+  }
 
 Widget _buildCircleButtonWithCorners() {
   return Align(
@@ -244,7 +265,21 @@ Widget _buildLoginButton(BuildContext context) {
     ),
   );
 }
-
+Widget _buildProductsButton(BuildContext context) {
+  return ElevatedButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ProductSplash(),
+        ),
+      );
+    },
+    child: const Text(
+      AppStrings.products,
+    ),
+  );
+}
 Widget _buildSkipButton(BuildContext context) {
   return Align(
     alignment: Alignment.center,
@@ -265,6 +300,5 @@ Widget _buildSkipButton(BuildContext context) {
         ),
       ),
     ),
-
   );
 }

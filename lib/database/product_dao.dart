@@ -27,6 +27,16 @@ class ProductDao extends DatabaseAccessor<AppDatabase>
 
   // TODO:: DELETE PRODUCT
   Future<int> deleteProduct(int id) {
-    return (delete(products)..where((tbl) => tbl.id.equals(id))).go();
+    return (delete(products)
+      ..where((tbl) => tbl.id.equals(id))).go();
+  }
+
+// TODO:: REPLACE ALL PRODUCTS
+  Future<void> replaceAllProducts(List<ProductsCompanion> productsList,) async {
+    await delete(products).go();
+
+    await batch((batch) {
+      batch.insertAll(products, productsList);
+    });
   }
 }
