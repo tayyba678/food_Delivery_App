@@ -51,7 +51,7 @@ lib/
 
 1.  **Clone the repository**:
     ```bash
-    git clone <repository-url>
+    git clone <https://github.com/tayyba678/food_Delivery_App>
     ```
 
 2.  **Install dependencies**:
